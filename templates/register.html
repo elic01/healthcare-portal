@@ -1,0 +1,392 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Healthcare Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white text-center">
+                <h3 class="mb-0">
+                    <i class="fas fa-user-plus"></i> User Registration
+                </h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" id="registerForm">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3 text-primary">
+                                <i class="fas fa-info-circle"></i> Basic Information
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user"></i> Username <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       required placeholder="Choose a unique username">
+                                <div class="form-text">Must be unique, 3-20 characters</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope"></i> Email Address
+                                </label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="your@email.com">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label">
+                                    <i class="fas fa-user"></i> First Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" 
+                                       required placeholder="Enter your first name">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label">
+                                    <i class="fas fa-user"></i> Last Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" 
+                                       required placeholder="Enter your last name">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="phone_number" class="form-label">
+                                    <i class="fas fa-phone"></i> Phone Number
+                                </label>
+                                <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                       placeholder="+1 (555) 123-4567">
+                            </div>
+                        </div>
+
+                        <!-- Security & Role -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3 text-primary">
+                                <i class="fas fa-shield-alt"></i> Security & Role
+                            </h5>
+                            
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock"></i> Password <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           required placeholder="Create a strong password">
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    Must be at least 8 characters with letters and numbers
+                                </div>
+                                <div id="password-strength" class="mt-1"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">
+                                    <i class="fas fa-lock"></i> Confirm Password <span class="text-danger">*</span>
+                                </label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                       required placeholder="Confirm your password">
+                                <div id="password-match" class="form-text"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="role" class="form-label">
+                                    <i class="fas fa-user-tag"></i> Role <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-control" id="role" name="role" required>
+                                    <option value="">Select your role</option>
+                                    <option value="patient">Patient</option>
+                                    <option value="nurse">Nurse</option>
+                                    <option value="doctor">Doctor</option>
+                                    <option value="administrator">Administrator</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="address" class="form-label">
+                                    <i class="fas fa-map-marker-alt"></i> Address
+                                </label>
+                                <textarea class="form-control" id="address" name="address" rows="3" 
+                                          placeholder="Your full address"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Role-specific fields -->
+                    <div id="role-specific-fields">
+                        <!-- Patient fields -->
+                        <div id="patient-fields" class="role-fields" style="display: none;">
+                            <hr>
+                            <h5 class="mb-3 text-info">
+                                <i class="fas fa-user-injured"></i> Patient Information
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="emergency_contact" class="form-label">
+                                            <i class="fas fa-phone-alt"></i> Emergency Contact
+                                        </label>
+                                        <input type="text" class="form-control" id="emergency_contact" name="emergency_contact" 
+                                               placeholder="Name and phone number">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="blood_type" class="form-label">
+                                            <i class="fas fa-tint"></i> Blood Type
+                                        </label>
+                                        <select class="form-control" id="blood_type" name="blood_type">
+                                            <option value="">Select blood type</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="insurance_info" class="form-label">
+                                    <i class="fas fa-id-card"></i> Insurance Information
+                                </label>
+                                <textarea class="form-control" id="insurance_info" name="insurance_info" rows="2" 
+                                          placeholder="Insurance provider and policy details"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Medical Staff fields (Doctor/Nurse) -->
+                        <div id="staff-fields" class="role-fields" style="display: none;">
+                            <hr>
+                            <h5 class="mb-3 text-success">
+                                <i class="fas fa-user-md"></i> Medical Staff Information
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="specialization" class="form-label">
+                                            <i class="fas fa-stethoscope"></i> Specialization
+                                        </label>
+                                        <input type="text" class="form-control" id="specialization" name="specialization" 
+                                               placeholder="e.g., Cardiology, Emergency Medicine">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="license_number" class="form-label">
+                                            <i class="fas fa-certificate"></i> License Number
+                                        </label>
+                                        <input type="text" class="form-control" id="license_number" name="license_number" 
+                                               placeholder="Medical license number">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="department" class="form-label">
+                                    <i class="fas fa-building"></i> Department
+                                </label>
+                                <input type="text" class="form-control" id="department" name="department" 
+                                       placeholder="e.g., Emergency, ICU, Pediatrics">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-user-plus"></i> Register Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center bg-light">
+                <p class="mb-0">
+                    Already have an account? 
+                    <a href="{{ url_for('login') }}" class="text-decoration-none">
+                        <i class="fas fa-sign-in-alt"></i> Login here
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.role-fields {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.password-strength {
+    height: 4px;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.strength-weak { background: #dc3545; width: 25%; }
+.strength-fair { background: #ffc107; width: 50%; }
+.strength-good { background: #17a2b8; width: 75%; }
+.strength-strong { background: #28a745; width: 100%; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.getElementById('role');
+    const patientFields = document.getElementById('patient-fields');
+    const staffFields = document.getElementById('staff-fields');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    const togglePassword = document.getElementById('togglePassword');
+
+    // Toggle password visibility
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+
+    // Show/hide role-specific fields
+    roleSelect.addEventListener('change', function() {
+        const selectedRole = this.value;
+        
+        // Hide all role-specific fields
+        document.querySelectorAll('.role-fields').forEach(field => {
+            field.style.display = 'none';
+        });
+        
+        // Show relevant fields
+        if (selectedRole === 'patient') {
+            patientFields.style.display = 'block';
+        } else if (selectedRole === 'doctor' || selectedRole === 'nurse') {
+            staffFields.style.display = 'block';
+            
+            // Auto-fill specialization for nurses
+            if (selectedRole === 'nurse') {
+                document.getElementById('specialization').value = 'Nursing';
+            } else {
+                document.getElementById('specialization').value = '';
+            }
+        }
+    });
+
+    // Password strength indicator
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const strengthIndicator = document.getElementById('password-strength');
+        
+        if (!strengthIndicator) {
+            // Create strength indicator if it doesn't exist
+            const indicator = document.createElement('div');
+            indicator.id = 'password-strength';
+            indicator.className = 'password-strength mt-1';
+            this.parentNode.parentNode.appendChild(indicator);
+        }
+        
+        const strength = calculatePasswordStrength(password);
+        updatePasswordStrength(strength);
+    });
+
+    // Password confirmation
+    confirmPasswordInput.addEventListener('input', function() {
+        const password = passwordInput.value;
+        const confirmPassword = this.value;
+        const matchIndicator = document.getElementById('password-match');
+        
+        if (confirmPassword && password !== confirmPassword) {
+            matchIndicator.textContent = 'Passwords do not match';
+            matchIndicator.className = 'form-text text-danger';
+            this.classList.add('is-invalid');
+        } else if (confirmPassword && password === confirmPassword) {
+            matchIndicator.textContent = 'Passwords match';
+            matchIndicator.className = 'form-text text-success';
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        } else {
+            matchIndicator.textContent = '';
+            this.classList.remove('is-invalid', 'is-valid');
+        }
+    });
+
+    // Form validation
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Passwords do not match!');
+            return false;
+        }
+        
+        if (password.length < 8) {
+            e.preventDefault();
+            alert('Password must be at least 8 characters long!');
+            return false;
+        }
+        
+        // Add loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        submitBtn.disabled = true;
+    });
+
+    function calculatePasswordStrength(password) {
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (password.match(/[a-z]/)) strength++;
+        if (password.match(/[A-Z]/)) strength++;
+        if (password.match(/[0-9]/)) strength++;
+        if (password.match(/[^a-zA-Z0-9]/)) strength++;
+        return strength;
+    }
+
+    function updatePasswordStrength(strength) {
+        const indicator = document.getElementById('password-strength');
+        indicator.className = 'password-strength mt-1';
+        
+        if (strength === 0) {
+            indicator.style.width = '0%';
+            indicator.style.background = 'transparent';
+        } else if (strength <= 2) {
+            indicator.className += ' strength-weak';
+        } else if (strength <= 3) {
+            indicator.className += ' strength-fair';
+        } else if (strength <= 4) {
+            indicator.className += ' strength-good';
+        } else {
+            indicator.className += ' strength-strong';
+        }
+    }
+});
+</script>
+{% endblock %}

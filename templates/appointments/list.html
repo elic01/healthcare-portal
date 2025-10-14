@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Appointments - PDMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-calendar-alt text-primary"></i> Appointments</h2>
+                <p class="text-muted mb-0">Manage and view all appointments</p>
+            </div>
+            <div>
+                <a href="{{ url_for('book_appointment') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> Book Appointment
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-primary text-white">
+                                <tr>
+                                    <th><i class="fas fa-calendar"></i> Date</th>
+                                    <th><i class="fas fa-clock"></i> Time</th>
+                                    {% if session.role != 'patient' %}
+                                    <th><i class="fas fa-user-injured"></i> Patient</th>
+                                    {% endif %}
+                                    {% if session.role != 'doctor' %}
+                                    <th><i class="fas fa-user-md"></i> Doctor</th>
+                                    {% endif %}
+                                    <th><i class="fas fa-notes-medical"></i> Reason</th>
+                                    <th><i class="fas fa-info-circle"></i> Status</th>
+                                    <th><i class="fas fa-cog"></i> Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ appointment.appointment_date[:10] if appointment.appointment_date else 'N/A' }}</strong>
+                                    </td>
+                                    <td>
+                                        {% if appointment.appointment_time %}
+                                            <span class="badge bg-info">{{ appointment.appointment_time }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Not specified</span>
+                                        {% endif %}
+                                    </td>
+                                    {% if session.role != 'patient' %}
+                                    <td>
+                                        {% if appointment.patient and appointment.patient.first_name %}
+                                            <i class="fas fa-user-circle text-primary"></i>
+                                            {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    {% if session.role != 'doctor' %}
+                                    <td>
+                                        {% if appointment.doctor and appointment.doctor.first_name %}
+                                            <i class="fas fa-user-md text-info"></i>
+                                            Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if appointment.reason %}
+                                            {{ appointment.reason[:50] }}{% if appointment.reason|length > 50 %}...{% endif %}
+                                        {% else %}
+                                            <span class="text-muted">No reason provided</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if appointment.status == 'scheduled' %}
+                                            <span class="badge bg-success">Scheduled</span>
+                                        {% elif appointment.status == 'completed' %}
+                                            <span class="badge bg-secondary">Completed</span>
+                                        {% elif appointment.status == 'cancelled' %}
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">{{ appointment.status|title }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewDetails({{ appointment.id }})">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-calendar-times fa-5x text-muted mb-3" style="opacity: 0.3;"></i>
+                        <h4 class="text-muted">No Appointments Found</h4>
+                        <p class="text-muted mb-4">You don't have any appointments yet.</p>
+                        <a href="{{ url_for('book_appointment') }}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus"></i> Book Your First Appointment
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead th {
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(102, 126, 234, 0.05);
+    transform: scale(1.01);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+</style>
+
+<script>
+function viewDetails(appointmentId) {
+    window.location.href = '/appointments/' + appointmentId;
+}
+</script>
+{% endblock %}

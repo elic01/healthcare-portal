@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - PDMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, #0dcaf0 0%, #0056b3 100%);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    .info-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .info-card .card-header {
+        background: linear-gradient(135deg, #0dcaf0 0%, #00a8cc 100%);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+        padding: 15px 20px;
+    }
+
+    .appointment-item {
+        border-left: 4px solid #0dcaf0;
+        background-color: #f8f9fa;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .appointment-item:hover {
+        background-color: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    .patient-item {
+        border-left: 4px solid #198754;
+        background-color: #f8f9fa;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .patient-item:hover {
+        background-color: #e9ecef;
+        transform: translateX(5px);
+    }
+
+    .badge-time {
+        background: linear-gradient(45deg, #ffc107, #e0a800);
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+
+    .quick-action-btn {
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        border: 2px solid #e9ecef;
+        background: white;
+    }
+
+    .quick-action-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        border-color: #0dcaf0;
+    }
+
+    .doctor-specialty {
+        display: inline-block;
+        padding: 8px 15px;
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Welcome Header -->
+    <div class="row mb-4 fade-in">
+        <div class="col-12">
+            <h2 class="mb-2">
+                <i class="fas fa-user-md text-info"></i> Welcome, Dr. {{ session.last_name }}!
+            </h2>
+            <p class="text-muted mb-0">Your Medical Practice Dashboard</p>
+            {% if doctor_info and doctor_info.specialization %}
+            <span class="doctor-specialty mt-2">
+                <i class="fas fa-stethoscope"></i> {{ doctor_info.specialization }}
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="row slide-in-left">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-2"><i class="fas fa-calendar-day"></i> Today's Appointments</h6>
+                        <h2 class="mb-0">{{ appointments|length }}</h2>
+                        <small>Scheduled for today</small>
+                    </div>
+                    <i class="fas fa-calendar-check fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-2"><i class="fas fa-users"></i> Recent Patients</h6>
+                        <h2 class="mb-0">{{ recent_patients|length }}</h2>
+                        <small>Patients under care</small>
+                    </div>
+                    <i class="fas fa-user-injured fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-2"><i class="fas fa-file-medical"></i> Department</h6>
+                        <h2 class="mb-0">
+                            {% if doctor_info and doctor_info.department %}
+                                {{ doctor_info.department[:10] }}
+                            {% else %}
+                                General
+                            {% endif %}
+                        </h2>
+                        <small>Your department</small>
+                    </div>
+                    <i class="fas fa-hospital fa-3x opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Today's Appointments -->
+        <div class="col-lg-6 mb-4 slide-in-left">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt"></i> Today's Schedule
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    {% if appointments %}
+                        {% for appointment in appointments %}
+                        <div class="appointment-item p-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-2">
+                                        <i class="fas fa-user-circle text-info"></i>
+                                        {% if appointment.users %}
+                                            {{ appointment.users.first_name }} {{ appointment.users.last_name }}
+                                        {% else %}
+                                            Patient Information Unavailable
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-1 text-muted small">
+                                        <i class="fas fa-clock"></i>
+                                        {% if appointment.appointment_time %}
+                                            {{ appointment.appointment_time }}
+                                        {% else %}
+                                            Time not specified
+                                        {% endif %}
+                                    </p>
+                                    {% if appointment.reason %}
+                                    <p class="mb-0 text-muted small">
+                                        <i class="fas fa-notes-medical"></i> {{ appointment.reason }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                <div class="ms-3">
+                                    <span class="badge bg-success">{{ appointment.status|default('Scheduled')|title }}</span>
+                                    {% if appointment.patient_id %}
+                                    <a href="#" class="btn btn-sm btn-outline-info mt-2" onclick="alert('Patient details: ID #{{ appointment.patient_id }}')">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-calendar-times fa-4x mb-3 opacity-25"></i>
+                            <h5>No Appointments Today</h5>
+                            <p>You have a clear schedule for today.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Patients -->
+        <div class="col-lg-6 mb-4 slide-in-right">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users"></i> Recent Patients
+                    </h5>
+                </div>
+                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                    {% if recent_patients %}
+                        {% for patient in recent_patients %}
+                        <div class="patient-item p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">
+                                        <i class="fas fa-user text-success"></i>
+                                        {{ patient.first_name }} {{ patient.last_name }}
+                                    </h6>
+                                    <p class="mb-0 text-muted small">
+                                        <i class="fas fa-id-badge"></i> Patient ID: #{{ patient.id }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <a href="{{ url_for('patient_details', patient_id=patient.id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-file-medical"></i> Records
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-user-injured fa-4x mb-3 opacity-25"></i>
+                            <h5>No Recent Patients</h5>
+                            <p>Your recent patient list is empty.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row fade-in">
+        <div class="col-12">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <a href="{{ url_for('add_medical_record') }}" class="quick-action-btn btn w-100 text-start text-decoration-none">
+                                <i class="fas fa-prescription fa-2x text-primary mb-2"></i>
+                                <h6 class="mb-0">New Record</h6>
+                                <small class="text-muted">Add medical record</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <a href="{{ url_for('medical_records') }}" class="quick-action-btn btn w-100 text-start text-decoration-none">
+                                <i class="fas fa-file-medical-alt fa-2x text-success mb-2"></i>
+                                <h6 class="mb-0">Medical Records</h6>
+                                <small class="text-muted">View & update</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <a href="{{ url_for('book_appointment') }}" class="quick-action-btn btn w-100 text-start text-decoration-none">
+                                <i class="fas fa-calendar-plus fa-2x text-info mb-2"></i>
+                                <h6 class="mb-0">New Appointment</h6>
+                                <small class="text-muted">Schedule patient</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <a href="{{ url_for('patients_list') }}" class="quick-action-btn btn w-100 text-start text-decoration-none">
+                                <i class="fas fa-search fa-2x text-warning mb-2"></i>
+                                <h6 class="mb-0">Find Patient</h6>
+                                <small class="text-muted">Search records</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <button class="quick-action-btn btn w-100 text-start" onclick="alert('Lab results feature coming soon!')">
+                                <i class="fas fa-flask fa-2x text-danger mb-2"></i>
+                                <h6 class="mb-0">Lab Results</h6>
+                                <small class="text-muted">Review tests</small>
+                            </button>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <button class="quick-action-btn btn w-100 text-start" onclick="alert('Referrals feature coming soon!')">
+                                <i class="fas fa-share-square fa-2x text-secondary mb-2"></i>
+                                <h6 class="mb-0">Referrals</h6>
+                                <small class="text-muted">Send referral</small>
+                            </button>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <a href="{{ url_for('profile') }}" class="quick-action-btn btn w-100 text-start">
+                                <i class="fas fa-user-edit fa-2x text-dark mb-2"></i>
+                                <h6 class="mb-0">My Profile</h6>
+                                <small class="text-muted">Update info</small>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6">
+                            <button class="quick-action-btn btn w-100 text-start" onclick="alert('Reports feature coming soon!')">
+                                <i class="fas fa-chart-line fa-2x text-purple mb-2"></i>
+                                <h6 class="mb-0">Reports</h6>
+                                <small class="text-muted">View analytics</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-refresh appointments every 5 minutes
+        setInterval(function() {
+            console.log('Checking for new appointments...');
+            // This would typically make an AJAX call to refresh data
+        }, 300000);
+
+        // Add current time display
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+            console.log('Current time:', timeString);
+        }
+
+        updateTime();
+        setInterval(updateTime, 60000);
+
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

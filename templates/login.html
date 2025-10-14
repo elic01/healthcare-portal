@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Healthcare Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-lg-5 col-md-7 col-sm-9">
+        <!-- Login Card -->
+        <div class="card login-card shadow-lg border-0 fade-in">
+            <div class="card-header text-white text-center py-4 login-header">
+                <i class="fas fa-hospital fa-3x mb-3"></i>
+                <h3 class="mb-0 fw-bold">Welcome Back</h3>
+                <p class="mb-0 opacity-75">Sign in to your account</p>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <form method="POST" id="loginForm">
+                    <div class="mb-4">
+                        <label for="username" class="form-label fw-semibold">
+                            <i class="fas fa-user text-primary"></i> Username
+                        </label>
+                        <input type="text" class="form-control form-control-lg" id="username" name="username"
+                               required placeholder="Enter your username" autocomplete="username">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">
+                            <i class="fas fa-lock text-primary"></i> Password
+                        </label>
+                        <div class="input-group input-group-lg">
+                            <input type="password" class="form-control" id="password" name="password"
+                                   required placeholder="Enter your password" autocomplete="current-password">
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg py-3 fw-semibold">
+                            <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center bg-light py-3">
+                <p class="mb-0">
+                    Don't have an account?
+                    <a href="{{ url_for('register') }}" class="text-primary text-decoration-none fw-semibold">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Test Accounts Info -->
+        <div class="card mt-4 border-0 shadow-sm slide-in-left">
+            <div class="card-header bg-gradient text-white">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i> Test Credentials</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong class="text-primary">Administrator:</strong><br>
+                    <span class="badge bg-secondary me-2">Username:</span> <code class="text-dark">admin</code><br>
+                    <span class="badge bg-secondary me-2">Password:</span> <code class="text-dark">admin123</code>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.login-card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.login-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+@media (max-width: 576px) {
+    .login-card .card-body {
+        padding: 2rem 1.5rem !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle password visibility
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('password');
+    
+    togglePassword.addEventListener('click', function() {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+    
+    // Form validation
+    const loginForm = document.getElementById('loginForm');
+    loginForm.addEventListener('submit', function(e) {
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        
+        if (!username || !password) {
+            e.preventDefault();
+            alert('Please fill in all fields.');
+            return false;
+        }
+        
+        // Add loading state
+        const submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

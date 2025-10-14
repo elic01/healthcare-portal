@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Patient Data Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-user-cog text-warning"></i> Administrator Dashboard</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button class="btn btn-outline-success btn-sm" onclick="printPage()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Statistics -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4><i class="fas fa-chart-bar text-primary"></i> System Statistics</h4>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Total Users -->
+    <div class="col-lg-3 col-md-6">
+        <div class="card stat-card admin-theme">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <div class="stat-number">{{ stats.total_users or 0 }}</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patients -->
+    <div class="col-lg-3 col-md-6">
+        <div class="card stat-card patient-theme">
+            <div class="card-body text-center">
+                <i class="fas fa-user-injured fa-3x patient-color mb-3"></i>
+                <div class="stat-number patient-color">{{ stats.patients or 0 }}</div>
+                <div class="stat-label">Patients</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctors -->
+    <div class="col-lg-3 col-md-6">
+        <div class="card stat-card doctor-theme">
+            <div class="card-body text-center">
+                <i class="fas fa-user-md fa-3x doctor-color mb-3"></i>
+                <div class="stat-number doctor-color">{{ stats.doctors or 0 }}</div>
+                <div class="stat-label">Doctors</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nurses -->
+    <div class="col-lg-3 col-md-6">
+        <div class="card stat-card nurse-theme">
+            <div class="card-body text-center">
+                <i class="fas fa-user-nurse fa-3x nurse-color mb-3"></i>
+                <div class="stat-number nurse-color">{{ stats.nurses or 0 }}</div>
+                <div class="stat-label">Nurses</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments -->
+    <div class="col-lg-4 col-md-6">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar-check fa-3x text-info mb-3"></i>
+                <div class="stat-number text-info">{{ stats.appointments or 0 }}</div>
+                <div class="stat-label">Total Appointments</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Records -->
+    <div class="col-lg-4 col-md-6">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <i class="fas fa-file-medical-alt fa-3x text-success mb-3"></i>
+                <div class="stat-number text-success">{{ stats.medical_records or 0 }}</div>
+                <div class="stat-label">Medical Records</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Administrators -->
+    <div class="col-lg-4 col-md-6">
+        <div class="card stat-card admin-theme">
+            <div class="card-body text-center">
+                <i class="fas fa-user-cog fa-3x admin-color mb-3"></i>
+                <div class="stat-number admin-color">{{ stats.administrators or 0 }}</div>
+                <div class="stat-label">Administrators</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <!-- Recent Users -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user-plus"></i> Recent Users</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users[:5] %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ user.first_name }} {{ user.last_name }}</strong><br>
+                                        <small class="text-muted">{{ user.username }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if user.role == 'patient' else 'success' if user.role == 'nurse' else 'info' if user.role == 'doctor' else 'warning' }}">
+                                            {{ user.role.title() }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ user.created_at[:10] if user.created_at else 'N/A' }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">No recent users</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- System Activity Logs -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-history"></i> System Activity</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_logs %}
+                    <div class="activity-log">
+                        {% for log in recent_logs[:8] %}
+                        <div class="activity-item d-flex align-items-center mb-3">
+                            <div class="activity-icon me-3">
+                                <i class="fas fa-{{ 'sign-in-alt' if 'LOGIN' in log.action else 'user-plus' if 'REGISTER' in log.action else 'edit' if 'UPDATE' in log.action else 'activity' }} 
+                                   text-{{ 'success' if 'LOGIN' in log.action else 'primary' if 'REGISTER' in log.action else 'warning' if 'UPDATE' in log.action else 'info' }}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-text">
+                                    {% if log.users %}
+                                        <strong>{{ log.users.first_name }} {{ log.users.last_name }}</strong>
+                                    {% else %}
+                                        <strong>System</strong>
+                                    {% endif %}
+                                    <span class="text-muted">{{ log.action.lower().replace('_', ' ') }}</span>
+                                </div>
+                                <small class="text-muted">
+                                    {{ log.created_at[:19].replace('T', ' ') if log.created_at else 'Recently' }}
+                                </small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center mb-0">No recent activity</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('patients_list') }}" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="fas fa-users"></i><br>
+                            <small>Manage Patients</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-success btn-lg w-100">
+                            <i class="fas fa-user-plus"></i><br>
+                            <small>Add New User</small>
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <button class="btn btn-outline-info btn-lg w-100" onclick="location.reload()">
+                            <i class="fas fa-chart-bar"></i><br>
+                            <small>System Reports</small>
+                        </button>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <button class="btn btn-outline-secondary btn-lg w-100" onclick="location.reload()">
+                            <i class="fas fa-cogs"></i><br>
+                            <small>System Settings</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.activity-log {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item:last-child {
+    margin-bottom: 0 !important;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-action-btn {
+    height: 100px;
+    border: 2px dashed #ddd;
+    transition: all 0.3s ease;
+}
+
+.quick-action-btn:hover {
+    border-color: var(--bs-primary);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .quick-action-btn {
+        height: 80px;
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-refresh statistics every 30 seconds
+    setInterval(function() {
+        const stats = document.querySelectorAll('.stat-number');
+        stats.forEach(function(stat) {
+            stat.style.opacity = '0.5';
+        });
+        
+        setTimeout(function() {
+            location.reload();
+        }, 1000);
+    }, 30000);
+    
+    // Add tooltips to activity items
+    const activityItems = document.querySelectorAll('.activity-item');
+    activityItems.forEach(function(item) {
+        item.setAttribute('data-bs-toggle', 'tooltip');
+        item.setAttribute('title', 'Click for details');
+    });
+});
+</script>
+{% endblock %}

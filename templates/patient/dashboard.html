@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - PDMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .info-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .info-card .card-header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+    }
+    
+    .appointment-upcoming {
+        border-left: 4px solid #28a745;
+        background-color: #f8f9fa;
+    }
+    
+    .record-item {
+        border-left: 4px solid #007bff;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+    }
+    
+    .badge-status {
+        font-size: 0.75rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-user-circle text-primary"></i> Welcome, {{ session.first_name }}!</h2>
+            <p class="text-muted">Your Personal Health Dashboard</p>
+        </div>
+    </div>
+    
+    <!-- Patient Information Card -->
+    <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-id-card"></i> Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ session.first_name }} {{ session.last_name }}</p>
+                    {% if patient_info %}
+                        {% if patient_info.emergency_contact %}
+                        <p><strong>Emergency Contact:</strong> {{ patient_info.emergency_contact }}</p>
+                        {% endif %}
+                        {% if patient_info.blood_type %}
+                        <p><strong>Blood Type:</strong> <span class="badge bg-danger">{{ patient_info.blood_type }}</span></p>
+                        {% endif %}
+                        {% if patient_info.insurance_info %}
+                        <p><strong>Insurance:</strong> {{ patient_info.insurance_info }}</p>
+                        {% endif %}
+                    {% endif %}
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit"></i> Update Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Stats -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="stat-card">
+                <h6><i class="fas fa-file-medical"></i> Medical Records</h6>
+                <h3>{{ medical_records|length }}</h3>
+                <p class="mb-0">Total Records</p>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="stat-card">
+                <h6><i class="fas fa-calendar-check"></i> Upcoming Appointments</h6>
+                <h3>{{ appointments|length }}</h3>
+                <p class="mb-0">Scheduled</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Upcoming Appointments -->
+        <div class="col-lg-6 mb-4">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Upcoming Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                        {% for appointment in appointments %}
+                        <div class="appointment-upcoming p-3 rounded mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if appointment.users %}
+                                            Dr. {{ appointment.users.first_name }} {{ appointment.users.last_name }}
+                                        {% else %}
+                                            Doctor Not Assigned
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-1">
+                                        <i class="fas fa-calendar"></i> 
+                                        {{ appointment.appointment_date[:10] if appointment.appointment_date else 'Date TBD' }}
+                                    </p>
+                                    {% if appointment.appointment_time %}
+                                    <p class="mb-1">
+                                        <i class="fas fa-clock"></i> {{ appointment.appointment_time }}
+                                    </p>
+                                    {% endif %}
+                                    {% if appointment.reason %}
+                                    <p class="mb-0 text-muted">{{ appointment.reason }}</p>
+                                    {% endif %}
+                                </div>
+                                <span class="badge bg-success badge-status">
+                                    {{ appointment.status|default('scheduled')|title }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                            <p>No upcoming appointments scheduled.</p>
+                            <a href="{{ url_for('book_appointment') }}" class="btn btn-primary">Schedule Appointment</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Medical Records -->
+        <div class="col-lg-6 mb-4">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-medical-alt"></i> Recent Medical Records</h5>
+                </div>
+                <div class="card-body">
+                    {% if medical_records %}
+                        {% for record in medical_records %}
+                        <div class="record-item p-3 rounded mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if record.users %}
+                                            Dr. {{ record.users.first_name }} {{ record.users.last_name }}
+                                        {% else %}
+                                            Doctor Not Specified
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-1">
+                                        <i class="fas fa-calendar"></i> 
+                                        {{ record.visit_date[:10] if record.visit_date else 'Date not recorded' }}
+                                    </p>
+                                    {% if record.diagnosis %}
+                                    <p class="mb-1"><strong>Diagnosis:</strong> {{ record.diagnosis }}</p>
+                                    {% endif %}
+                                    {% if record.symptoms %}
+                                    <p class="mb-0 text-muted"><strong>Symptoms:</strong> {{ record.symptoms }}</p>
+                                    {% endif %}
+                                </div>
+                                {% if record.visit_type %}
+                                <span class="badge bg-info badge-status">{{ record.visit_type|title }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-file-medical fa-3x mb-3"></i>
+                            <p>No medical records found.</p>
+                            <small>Your medical records will appear here after your first visit.</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tools"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{{ url_for('profile') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-user-edit"></i><br>
+                                Update Profile
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{{ url_for('book_appointment') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-calendar-plus"></i><br>
+                                Book Appointment
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="{{ url_for('medical_records') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-file-medical"></i><br>
+                                View Records
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-3">
+                            <a href="#" class="btn btn-outline-warning w-100" onclick="alert('Feature coming soon!')">
+                                <i class="fas fa-phone"></i><br>
+                                Contact Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add some interactivity
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-refresh appointments every 5 minutes
+        setInterval(function() {
+            console.log('Checking for appointment updates...');
+            // This would typically make an AJAX call to refresh data
+        }, 300000);
+        
+        // Add tooltips to badges
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

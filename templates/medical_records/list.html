@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Medical Records - PDMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-file-medical-alt text-success"></i> Medical Records</h2>
+                <p class="text-muted mb-0">View all medical records and history</p>
+            </div>
+            {% if session.role in ['doctor', 'nurse'] %}
+            <div>
+                <a href="{{ url_for('add_medical_record') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-plus"></i> Add Record
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    {% if records %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-success text-white">
+                                <tr>
+                                    <th><i class="fas fa-calendar"></i> Visit Date</th>
+                                    {% if session.role != 'patient' %}
+                                    <th><i class="fas fa-user-injured"></i> Patient</th>
+                                    {% endif %}
+                                    {% if session.role != 'doctor' %}
+                                    <th><i class="fas fa-user-md"></i> Doctor</th>
+                                    {% endif %}
+                                    <th><i class="fas fa-stethoscope"></i> Symptoms</th>
+                                    <th><i class="fas fa-diagnoses"></i> Diagnosis</th>
+                                    <th><i class="fas fa-pills"></i> Prescription</th>
+                                    <th><i class="fas fa-tag"></i> Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in records %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ record.visit_date[:10] if record.visit_date else 'N/A' }}</strong>
+                                    </td>
+                                    {% if session.role != 'patient' %}
+                                    <td>
+                                        {% if record.patient and record.patient.first_name %}
+                                            <i class="fas fa-user-circle text-primary"></i>
+                                            {{ record.patient.first_name }} {{ record.patient.last_name }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    {% if session.role != 'doctor' %}
+                                    <td>
+                                        {% if record.doctor and record.doctor.first_name %}
+                                            <i class="fas fa-user-md text-info"></i>
+                                            Dr. {{ record.doctor.first_name }} {{ record.doctor.last_name }}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endif %}
+                                    <td>
+                                        {% if record.symptoms %}
+                                            {{ record.symptoms[:40] }}{% if record.symptoms|length > 40 %}...{% endif %}
+                                        {% else %}
+                                            <span class="text-muted">None recorded</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.diagnosis %}
+                                            <strong>{{ record.diagnosis[:40] }}{% if record.diagnosis|length > 40 %}...{% endif %}</strong>
+                                        {% else %}
+                                            <span class="text-muted">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.prescription %}
+                                            {{ record.prescription[:30] }}{% if record.prescription|length > 30 %}...{% endif %}
+                                        {% else %}
+                                            <span class="text-muted">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ record.visit_type|title if record.visit_type else 'General' }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-3">
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-info-circle"></i> Total Records: <strong>{{ records|length }}</strong>
+                        </p>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-file-medical fa-5x text-muted mb-3" style="opacity: 0.3;"></i>
+                        <h4 class="text-muted">No Medical Records Found</h4>
+                        <p class="text-muted mb-4">No medical records are available.</p>
+                        {% if session.role in ['doctor', 'nurse'] %}
+                        <a href="{{ url_for('add_medical_record') }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus"></i> Add First Record
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead th {
+    border: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(25, 135, 84, 0.05);
+    transform: scale(1.005);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    border: none;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+}
+</style>
+{% endblock %}

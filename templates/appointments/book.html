@@ -1,0 +1,374 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment - PDMS{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="display-6 fw-bold mb-2">
+                    <i class="fas fa-calendar-plus text-primary"></i>
+                    Schedule Your Appointment
+                </h2>
+                <p class="text-muted">Book a consultation with our healthcare professionals</p>
+            </div>
+
+            <!-- Booking Form Card -->
+            <div class="card shadow-lg border-0 booking-card">
+                <div class="card-header bg-gradient text-white py-4">
+                    <h4 class="mb-0">
+                        <i class="fas fa-clipboard-list"></i> Appointment Details
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" id="appointmentForm">
+                        <div class="row">
+                            <!-- Patient Selection (for staff only) -->
+                            {% if session.role != 'patient' %}
+                            <div class="col-md-6 mb-4">
+                                <label for="patient_id" class="form-label fw-semibold">
+                                    <i class="fas fa-user-injured text-primary"></i> Patient <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-lg custom-select" id="patient_id" name="patient_id" required>
+                                    <option value="">-- Select Patient --</option>
+                                    {% for patient in patients %}
+                                    <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Select the patient for this appointment</small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Doctor Selection -->
+                            <div class="col-md-{% if session.role == 'patient' %}12{% else %}6{% endif %} mb-4">
+                                <label for="doctor_id" class="form-label fw-semibold">
+                                    <i class="fas fa-user-md text-info"></i> Doctor <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-lg custom-select" id="doctor_id" name="doctor_id" required>
+                                    <option value="">-- Select Doctor --</option>
+                                    {% for doctor in doctors %}
+                                    <option value="{{ doctor.id }}" data-specialization="{{ doctor.specialization if doctor.specialization else 'General Practice' }}">
+                                        Dr. {{ doctor.first_name }} {{ doctor.last_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted" id="doctorInfo">Choose your preferred doctor</small>
+                            </div>
+
+                            <!-- Appointment Date -->
+                            <div class="col-md-6 mb-4">
+                                <label for="appointment_date" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar text-success"></i> Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control form-control-lg custom-input"
+                                       id="appointment_date" name="appointment_date" required>
+                                <small class="text-muted">Select a date for your appointment</small>
+                            </div>
+
+                            <!-- Appointment Time -->
+                            <div class="col-md-6 mb-4">
+                                <label for="appointment_time" class="form-label fw-semibold">
+                                    <i class="fas fa-clock text-warning"></i> Time
+                                </label>
+                                <input type="time" class="form-control form-control-lg custom-input"
+                                       id="appointment_time" name="appointment_time"
+                                       min="08:00" max="18:00">
+                                <small class="text-muted">Office hours: 8:00 AM - 6:00 PM</small>
+                            </div>
+
+                            <!-- Reason for Visit -->
+                            <div class="col-12 mb-4">
+                                <label for="reason" class="form-label fw-semibold">
+                                    <i class="fas fa-notes-medical text-danger"></i> Reason for Visit
+                                </label>
+                                <textarea class="form-control form-control-lg custom-input"
+                                          id="reason" name="reason" rows="4"
+                                          placeholder="Please describe your symptoms or reason for the appointment in detail..."></textarea>
+                                <small class="text-muted">This helps the doctor prepare for your visit</small>
+                            </div>
+
+                            <!-- Additional Notes Section -->
+                            <div class="col-12 mb-4">
+                                <div class="alert alert-info border-0">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-info-circle"></i> Important Information
+                                    </h6>
+                                    <ul class="mb-0 small">
+                                        <li>Please arrive 10 minutes before your scheduled time</li>
+                                        <li>Bring your ID and insurance card if applicable</li>
+                                        <li>You will receive a confirmation notification</li>
+                                        <li>You can reschedule up to 24 hours before the appointment</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ url_for('appointments') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">
+                                <i class="fas fa-check-circle"></i> Confirm Booking
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="card mt-4 border-0 bg-light">
+                <div class="card-body text-center">
+                    <p class="mb-2">
+                        <i class="fas fa-question-circle text-primary"></i>
+                        <strong>Need help booking?</strong>
+                    </p>
+                    <p class="text-muted small mb-0">
+                        Contact our support team at <a href="tel:+1234567890">+1 (234) 567-890</a>
+                        or email <a href="mailto:support@pdms.com">support@pdms.com</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Gradient Background */
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Card Styling */
+.booking-card {
+    border-radius: 20px;
+    overflow: hidden;
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-header {
+    border: none;
+}
+
+/* Form Controls */
+.custom-input, .custom-select {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    padding: 12px 16px;
+}
+
+.custom-input:focus, .custom-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+}
+
+.custom-input:hover, .custom-select:hover {
+    border-color: #667eea;
+}
+
+/* Labels */
+.form-label {
+    color: #2d3748;
+    margin-bottom: 8px;
+}
+
+.form-label i {
+    margin-right: 5px;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* Alert */
+.alert-info {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 12px;
+}
+
+/* Small text */
+small.text-muted {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.85rem;
+}
+
+/* Required asterisk */
+.text-danger {
+    color: #e53e3e !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .booking-card {
+        border-radius: 15px;
+    }
+
+    .card-body {
+        padding: 20px !important;
+    }
+
+    .btn-lg {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to today
+    const dateInput = document.getElementById('appointment_date');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
+
+    // Set default time to 9:00 AM
+    const timeInput = document.getElementById('appointment_time');
+    if (!timeInput.value) {
+        timeInput.value = '09:00';
+    }
+
+    // Doctor selection - show specialization
+    const doctorSelect = document.getElementById('doctor_id');
+    const doctorInfo = document.getElementById('doctorInfo');
+
+    doctorSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            const specialization = selectedOption.getAttribute('data-specialization');
+            doctorInfo.innerHTML = `<i class="fas fa-stethoscope"></i> Specialization: ${specialization}`;
+            doctorInfo.classList.add('text-primary');
+        } else {
+            doctorInfo.innerHTML = 'Choose your preferred doctor';
+            doctorInfo.classList.remove('text-primary');
+        }
+    });
+
+    // Form validation with better UX
+    const form = document.getElementById('appointmentForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', function(e) {
+        // Disable submit button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Booking...';
+
+        const doctorId = document.getElementById('doctor_id').value;
+        const appointmentDate = document.getElementById('appointment_date').value;
+        const appointmentTime = document.getElementById('appointment_time').value;
+
+        // Validation
+        if (!doctorId) {
+            e.preventDefault();
+            showError('Please select a doctor.');
+            resetSubmitButton();
+            return false;
+        }
+
+        if (!appointmentDate) {
+            e.preventDefault();
+            showError('Please select an appointment date.');
+            resetSubmitButton();
+            return false;
+        }
+
+        // Check if date is in the past
+        const selectedDate = new Date(appointmentDate);
+        const currentDate = new Date(today);
+
+        if (selectedDate < currentDate) {
+            e.preventDefault();
+            showError('Cannot book appointments in the past. Please select today or a future date.');
+            resetSubmitButton();
+            return false;
+        }
+
+        // Check if time is within office hours
+        if (appointmentTime) {
+            const [hours, minutes] = appointmentTime.split(':').map(Number);
+            if (hours < 8 || hours >= 18) {
+                e.preventDefault();
+                showError('Please select a time between 8:00 AM and 6:00 PM.');
+                resetSubmitButton();
+                return false;
+            }
+        }
+
+        // Show success animation
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirmed!';
+    });
+
+    function showError(message) {
+        // Create a temporary alert
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+        alert.style.zIndex = '9999';
+        alert.innerHTML = `
+            <i class="fas fa-exclamation-triangle"></i> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alert);
+
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            alert.remove();
+        }, 5000);
+    }
+
+    function resetSubmitButton() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+    }
+
+    // Highlight weekend dates
+    dateInput.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const dayOfWeek = selectedDate.getDay();
+
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            const confirm = window.confirm('You selected a weekend date. Our office has limited hours on weekends. Do you want to continue?');
+            if (!confirm) {
+                this.value = '';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

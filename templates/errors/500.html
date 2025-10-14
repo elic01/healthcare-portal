@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}500 - Server Error{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+        <div class="col-lg-6 col-md-8 text-center">
+            <div class="error-page fade-in">
+                <div class="error-icon mb-4">
+                    <i class="fas fa-exclamation-triangle fa-6x text-danger" style="opacity: 0.7;"></i>
+                </div>
+                <h1 class="display-1 fw-bold text-danger">500</h1>
+                <h2 class="mb-4">Internal Server Error</h2>
+                <p class="lead text-muted mb-4">
+                    Oops! Something went wrong on our end. Our team has been notified and is working to fix the issue.
+                </p>
+
+                <div class="alert alert-danger border-left-danger mb-4" role="alert">
+                    <i class="fas fa-tools me-2"></i>
+                    <strong>Technical Issue:</strong> The server encountered an unexpected error and could not complete your request.
+                </div>
+
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h6 class="mb-3">What you can do:</h6>
+                        <ul class="list-unstyled text-start">
+                            <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Refresh the page</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Try again in a few moments</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Clear your browser cache</li>
+                            <li class="mb-2"><i class="fas fa-check-circle text-success"></i> Contact support if the problem persists</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-block">
+                    <button onclick="location.reload()" class="btn btn-primary btn-lg me-md-2 mb-2 mb-md-0">
+                        <i class="fas fa-sync-alt"></i> Refresh Page
+                    </button>
+                    <a href="{{ url_for('dashboard') if session.user_id else url_for('index') }}" class="btn btn-outline-primary btn-lg me-md-2 mb-2 mb-md-0">
+                        <i class="fas fa-home"></i> Go Home
+                    </a>
+                    <button onclick="window.history.back()" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left"></i> Go Back
+                    </button>
+                </div>
+
+                <div class="mt-5">
+                    <p class="text-muted">
+                        <small>
+                            <i class="fas fa-question-circle"></i>
+                            Error persists? <a href="#">Contact Support</a> | Error Code: 500
+                        </small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    animation: fadeIn 0.6s ease-in;
+}
+
+.error-icon i {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.border-left-danger {
+    border-left: 4px solid #dc3545;
+}
+
+.card ul {
+    padding-left: 1.5rem;
+}
+
+.card ul li {
+    display: flex;
+    align-items: center;
+}
+
+.card ul li i {
+    margin-right: 0.5rem;
+}
+</style>
+{% endblock %}

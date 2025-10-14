@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Appointment Details - PDMS{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('appointments') }}">Appointments</a></li>
+                    <li class="breadcrumb-item active">Details</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2><i class="fas fa-calendar-check text-primary"></i> Appointment Details</h2>
+                <a href="{{ url_for('appointments') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Appointments
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if appointment %}
+    <div class="row">
+        <!-- Appointment Information Card -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Appointment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1"><i class="fas fa-calendar"></i> Date</label>
+                                <p class="fw-bold mb-0">{{ appointment.appointment_date[:10] if appointment.appointment_date else 'Not specified' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1"><i class="fas fa-clock"></i> Time</label>
+                                <p class="fw-bold mb-0">
+                                    {% if appointment.appointment_time %}
+                                        {{ appointment.appointment_time }}
+                                    {% else %}
+                                        <span class="text-muted">Not specified</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1"><i class="fas fa-hourglass-half"></i> Duration</label>
+                                <p class="fw-bold mb-0">{{ appointment.duration_minutes }} minutes</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1"><i class="fas fa-traffic-light"></i> Status</label>
+                                <p class="mb-0">
+                                    {% if appointment.status == 'scheduled' %}
+                                        <span class="badge bg-success fs-6">Scheduled</span>
+                                    {% elif appointment.status == 'completed' %}
+                                        <span class="badge bg-secondary fs-6">Completed</span>
+                                    {% elif appointment.status == 'cancelled' %}
+                                        <span class="badge bg-danger fs-6">Cancelled</span>
+                                    {% elif appointment.status == 'no_show' %}
+                                        <span class="badge bg-warning fs-6">No Show</span>
+                                    {% else %}
+                                        <span class="badge bg-info fs-6">{{ appointment.status|title }}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1"><i class="fas fa-notes-medical"></i> Reason for Visit</label>
+                                <p class="mb-0">{{ appointment.reason if appointment.reason else 'No reason provided' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if appointment.notes %}
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="info-item">
+                                <label class="text-muted small mb-1"><i class="fas fa-sticky-note"></i> Notes</label>
+                                <p class="mb-0">{{ appointment.notes }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient & Doctor Information -->
+        <div class="col-lg-4">
+            <!-- Patient Information -->
+            {% if patient %}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-injured"></i> Patient</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="avatar-circle bg-info text-white mb-2">
+                            {{ patient.first_name[0] if patient.first_name else 'P' }}{{ patient.last_name[0] if patient.last_name else '' }}
+                        </div>
+                        <h5 class="mb-1">{{ patient.first_name }} {{ patient.last_name }}</h5>
+                        <p class="text-muted small mb-0">Patient</p>
+                    </div>
+                    {% if patient.email %}
+                    <div class="mb-2">
+                        <small class="text-muted"><i class="fas fa-envelope"></i></small>
+                        <span class="ms-2">{{ patient.email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if patient.phone_number %}
+                    <div class="mb-2">
+                        <small class="text-muted"><i class="fas fa-phone"></i></small>
+                        <span class="ms-2">{{ patient.phone_number }}</span>
+                    </div>
+                    {% endif %}
+                    {% if session.role in ['doctor', 'nurse', 'administrator'] %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('patient_details', patient_id=patient.id) }}" class="btn btn-sm btn-outline-info w-100">
+                            <i class="fas fa-user"></i> View Profile
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Doctor Information -->
+            {% if doctor %}
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-md"></i> Doctor</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="avatar-circle bg-success text-white mb-2">
+                            {{ doctor.first_name[0] if doctor.first_name else 'D' }}{{ doctor.last_name[0] if doctor.last_name else '' }}
+                        </div>
+                        <h5 class="mb-1">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</h5>
+                        <p class="text-muted small mb-0">Doctor</p>
+                    </div>
+                    {% if doctor.email %}
+                    <div class="mb-2">
+                        <small class="text-muted"><i class="fas fa-envelope"></i></small>
+                        <span class="ms-2">{{ doctor.email }}</span>
+                    </div>
+                    {% endif %}
+                    {% if doctor.phone_number %}
+                    <div class="mb-2">
+                        <small class="text-muted"><i class="fas fa-phone"></i></small>
+                        <span class="ms-2">{{ doctor.phone_number }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            {% if session.role in ['doctor', 'nurse', 'administrator'] and appointment.status == 'scheduled' %}
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-success w-100 mb-2" onclick="updateStatus('completed')">
+                        <i class="fas fa-check"></i> Mark as Completed
+                    </button>
+                    <button class="btn btn-danger w-100" onclick="updateStatus('cancelled')">
+                        <i class="fas fa-times"></i> Cancel Appointment
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Related Medical Records -->
+    {% if session.role in ['doctor', 'nurse', 'administrator'] and medical_records %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-medical"></i> Related Medical Records</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Doctor</th>
+                                    <th>Diagnosis</th>
+                                    <th>Treatment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in medical_records %}
+                                <tr>
+                                    <td>{{ record.visit_date[:10] if record.visit_date else 'N/A' }}</td>
+                                    <td>
+                                        {% if record.users %}
+                                            Dr. {{ record.users.first_name }} {{ record.users.last_name }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.diagnosis[:50] if record.diagnosis else 'N/A' }}</td>
+                                    <td>{{ record.treatment[:50] if record.treatment else 'N/A' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> Appointment not found.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.info-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+</style>
+
+<script>
+function updateStatus(newStatus) {
+    if (confirm('Are you sure you want to update this appointment status to ' + newStatus + '?')) {
+        // TODO: Implement status update via AJAX
+        fetch('/api/appointments/{{ appointment.id }}/status', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: newStatus })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Appointment status updated successfully!');
+                location.reload();
+            } else {
+                alert('Error updating status: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+        });
+    }
+}
+</script>
+{% endblock %}

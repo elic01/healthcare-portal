@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Add Medical Record - PDMS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 fade-in">
+                <div class="card-header bg-gradient text-white py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-file-medical-alt"></i> Add Medical Record
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" id="medicalRecordForm">
+                        <div class="row">
+                            <!-- Patient Selection -->
+                            <div class="col-md-6 mb-3">
+                                <label for="patient_id" class="form-label fw-semibold">
+                                    <i class="fas fa-user-injured text-primary"></i> Patient <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-lg" id="patient_id" name="patient_id" required>
+                                    <option value="">Select Patient</option>
+                                    {% for patient in patients %}
+                                    <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Doctor Selection (for nurses) -->
+                            {% if session.role == 'nurse' %}
+                            <div class="col-md-6 mb-3">
+                                <label for="doctor_id" class="form-label fw-semibold">
+                                    <i class="fas fa-user-md text-info"></i> Doctor <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-lg" id="doctor_id" name="doctor_id" required>
+                                    <option value="">Select Doctor</option>
+                                    {% for doctor in doctors %}
+                                    <option value="{{ doctor.id }}">Dr. {{ doctor.first_name }} {{ doctor.last_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+
+                            <!-- Visit Date -->
+                            <div class="col-md-6 mb-3">
+                                <label for="visit_date" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar text-success"></i> Visit Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control form-control-lg" id="visit_date"
+                                       name="visit_date" required>
+                            </div>
+
+                            <!-- Visit Type -->
+                            <div class="col-md-6 mb-3">
+                                <label for="visit_type" class="form-label fw-semibold">
+                                    <i class="fas fa-tag text-warning"></i> Visit Type
+                                </label>
+                                <select class="form-select form-select-lg" id="visit_type" name="visit_type">
+                                    <option value="general">General Checkup</option>
+                                    <option value="emergency">Emergency</option>
+                                    <option value="followup">Follow-up</option>
+                                    <option value="consultation">Consultation</option>
+                                    <option value="surgery">Surgery</option>
+                                    <option value="diagnostic">Diagnostic</option>
+                                </select>
+                            </div>
+
+                            <!-- Symptoms -->
+                            <div class="col-12 mb-3">
+                                <label for="symptoms" class="form-label fw-semibold">
+                                    <i class="fas fa-stethoscope text-info"></i> Symptoms
+                                </label>
+                                <textarea class="form-control form-control-lg" id="symptoms" name="symptoms"
+                                          rows="3" placeholder="Describe patient's symptoms..."></textarea>
+                            </div>
+
+                            <!-- Diagnosis -->
+                            <div class="col-12 mb-3">
+                                <label for="diagnosis" class="form-label fw-semibold">
+                                    <i class="fas fa-diagnoses text-danger"></i> Diagnosis
+                                </label>
+                                <textarea class="form-control form-control-lg" id="diagnosis" name="diagnosis"
+                                          rows="3" placeholder="Enter diagnosis..."></textarea>
+                            </div>
+
+                            <!-- Treatment -->
+                            <div class="col-12 mb-3">
+                                <label for="treatment" class="form-label fw-semibold">
+                                    <i class="fas fa-notes-medical text-success"></i> Treatment Plan
+                                </label>
+                                <textarea class="form-control form-control-lg" id="treatment" name="treatment"
+                                          rows="3" placeholder="Describe treatment plan..."></textarea>
+                            </div>
+
+                            <!-- Prescription -->
+                            <div class="col-12 mb-3">
+                                <label for="prescription" class="form-label fw-semibold">
+                                    <i class="fas fa-pills text-primary"></i> Prescription
+                                </label>
+                                <textarea class="form-control form-control-lg" id="prescription" name="prescription"
+                                          rows="3" placeholder="List medications and dosages..."></textarea>
+                            </div>
+
+                            <!-- Notes -->
+                            <div class="col-12 mb-3">
+                                <label for="notes" class="form-label fw-semibold">
+                                    <i class="fas fa-clipboard text-secondary"></i> Additional Notes
+                                </label>
+                                <textarea class="form-control form-control-lg" id="notes" name="notes"
+                                          rows="2" placeholder="Any additional notes or observations..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ url_for('medical_records') }}" class="btn btn-outline-secondary btn-lg me-md-2">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save"></i> Save Record
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient {
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+}
+
+.form-control, .form-select {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    border: none;
+    border-radius: 10px;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(25, 135, 84, 0.4);
+}
+</style>
+
+<script>
+// Set maximum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('visit_date');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('max', today);
+
+    // Form validation
+    const form = document.getElementById('medicalRecordForm');
+    form.addEventListener('submit', function(e) {
+        const patientId = document.getElementById('patient_id').value;
+        const visitDate = document.getElementById('visit_date').value;
+
+        if (!patientId) {
+            e.preventDefault();
+            alert('Please select a patient.');
+            return false;
+        }
+
+        if (!visitDate) {
+            e.preventDefault();
+            alert('Please select a visit date.');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

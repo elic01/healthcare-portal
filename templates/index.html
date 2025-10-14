@@ -1,0 +1,604 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Healthcare Portal{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Animated Background -->
+<div class="hero-wrapper">
+    <div class="animated-bg">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+    </div>
+
+    <div class="hero-content">
+        <div class="container">
+            <div class="row align-items-center min-vh-75">
+                <div class="col-lg-6 text-white hero-text">
+                    <div class="badge bg-white text-primary mb-3 px-3 py-2">
+                        <i class="fas fa-award"></i> Healthcare Excellence
+                    </div>
+                    <h1 class="display-3 fw-bold mb-4 animate-fade-in">
+                        Transform Your Healthcare Management
+                    </h1>
+                    <p class="lead mb-4 animate-fade-in-delay-1">
+                        A comprehensive, secure platform designed for modern healthcare.
+                        Streamline patient care, manage appointments, and secure medical records—all in one place.
+                    </p>
+
+                    {% if not session.user_id %}
+                    <div class="d-flex gap-3 mb-4 animate-fade-in-delay-2">
+                        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-4 shadow-lg">
+                            <i class="fas fa-user-plus"></i> Get Started Free
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">
+                            <i class="fas fa-sign-in-alt"></i> Sign In
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="animate-fade-in-delay-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg px-5 shadow-lg">
+                            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex gap-4 mt-5 animate-fade-in-delay-3">
+                        <div class="stat-item">
+                            <div class="stat-number">99.9%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">Support</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">HIPAA</div>
+                            <div class="stat-label">Compliant</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="hero-illustration">
+                        <div class="floating-card card-1">
+                            <i class="fas fa-heartbeat"></i>
+                            <span>Real-time Monitoring</span>
+                        </div>
+                        <div class="floating-card card-2">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Smart Scheduling</span>
+                        </div>
+                        <div class="floating-card card-3">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Secure & Private</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-soft text-primary mb-3 px-3 py-2">
+                <i class="fas fa-star"></i> Powerful Features
+            </span>
+            <h2 class="display-5 fw-bold mb-3">Everything You Need in One Platform</h2>
+            <p class="lead text-muted">Streamline your healthcare operations with our comprehensive suite of tools</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon bg-primary">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Patient Management</h4>
+                    <p class="text-muted">
+                        Complete patient profiles with demographics, medical history, emergency contacts, and insurance information at your fingertips.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i> Comprehensive profiles</li>
+                        <li><i class="fas fa-check text-success"></i> Medical history tracking</li>
+                        <li><i class="fas fa-check text-success"></i> Emergency contacts</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card featured">
+                    <div class="popular-badge">Most Popular</div>
+                    <div class="feature-icon bg-success">
+                        <i class="fas fa-file-medical-alt"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Electronic Health Records</h4>
+                    <p class="text-muted">
+                        Secure, centralized storage for all medical records with instant access for authorized healthcare providers.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i> Encrypted storage</li>
+                        <li><i class="fas fa-check text-success"></i> Instant access</li>
+                        <li><i class="fas fa-check text-success"></i> Complete audit trail</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon bg-info">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Smart Scheduling</h4>
+                    <p class="text-muted">
+                        Intelligent appointment booking with automated reminders and seamless calendar integration for providers.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check text-success"></i> Online booking</li>
+                        <li><i class="fas fa-check text-success"></i> Automated reminders</li>
+                        <li><i class="fas fa-check text-success"></i> Calendar sync</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon bg-warning">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Role-Based Access</h4>
+                    <p class="text-muted">
+                        Granular permissions ensure data security with customized access levels for patients, nurses, doctors, and admins.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon bg-danger">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Analytics & Insights</h4>
+                    <p class="text-muted">
+                        Powerful reporting tools provide actionable insights into patient care, system usage, and operational efficiency.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <div class="feature-icon bg-dark">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Enterprise Security</h4>
+                    <p class="text-muted">
+                        Bank-level encryption, HIPAA compliance, and comprehensive audit logging keep your data safe and secure.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- User Roles Section -->
+<section class="roles-section py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-soft text-primary mb-3 px-3 py-2">
+                <i class="fas fa-user-friends"></i> For Everyone
+            </span>
+            <h2 class="display-5 fw-bold mb-3">Built for Your Entire Team</h2>
+            <p class="lead text-muted">Tailored experiences for every role in your healthcare organization</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="role-card">
+                    <div class="role-icon-wrapper bg-primary-gradient">
+                        <i class="fas fa-user-injured"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Patient</h4>
+                    <p class="text-muted mb-4">Access your health information anytime, anywhere</p>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check-circle"></i> View medical records</li>
+                        <li><i class="fas fa-check-circle"></i> Book appointments</li>
+                        <li><i class="fas fa-check-circle"></i> Update profile</li>
+                        <li><i class="fas fa-check-circle"></i> Track prescriptions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="role-card">
+                    <div class="role-icon-wrapper bg-success-gradient">
+                        <i class="fas fa-user-nurse"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Nurse</h4>
+                    <p class="text-muted mb-4">Efficient patient care coordination</p>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check-circle"></i> Patient list access</li>
+                        <li><i class="fas fa-check-circle"></i> Record vital signs</li>
+                        <li><i class="fas fa-check-circle"></i> Update notes</li>
+                        <li><i class="fas fa-check-circle"></i> View schedules</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="role-card">
+                    <div class="role-icon-wrapper bg-info-gradient">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Doctor</h4>
+                    <p class="text-muted mb-4">Complete clinical workflow management</p>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check-circle"></i> Full patient access</li>
+                        <li><i class="fas fa-check-circle"></i> Write prescriptions</li>
+                        <li><i class="fas fa-check-circle"></i> Medical charts</li>
+                        <li><i class="fas fa-check-circle"></i> Manage appointments</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="role-card">
+                    <div class="role-icon-wrapper bg-warning-gradient">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <h4 class="mt-4 mb-3">Administrator</h4>
+                    <p class="text-muted mb-4">System-wide oversight and control</p>
+                    <ul class="role-features">
+                        <li><i class="fas fa-check-circle"></i> User management</li>
+                        <li><i class="fas fa-check-circle"></i> System reports</li>
+                        <li><i class="fas fa-check-circle"></i> Database access</li>
+                        <li><i class="fas fa-check-circle"></i> Configuration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+{% if not session.user_id %}
+<section class="cta-section py-5">
+    <div class="container py-5">
+        <div class="cta-card">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2 class="display-5 fw-bold text-white mb-3">Ready to Transform Your Healthcare?</h2>
+                    <p class="lead text-white mb-0">
+                        Join thousands of healthcare providers using our platform to deliver better patient care.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-4 mt-lg-0">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg px-5 me-2 mb-2">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-5 mb-2">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<style>
+/* Hero Section */
+.hero-wrapper {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 85vh;
+}
+
+.animated-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    animation: float 20s infinite ease-in-out;
+}
+
+.circle-1 {
+    width: 300px;
+    height: 300px;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.circle-2 {
+    width: 200px;
+    height: 200px;
+    top: 50%;
+    right: 20%;
+    animation-delay: 5s;
+}
+
+.circle-3 {
+    width: 400px;
+    height: 400px;
+    bottom: -10%;
+    left: 40%;
+    animation-delay: 10s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-50px) rotate(180deg); }
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    padding: 80px 0;
+}
+
+.min-vh-75 {
+    min-height: 75vh;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Animations */
+.animate-fade-in {
+    animation: fadeInUp 1s ease-out;
+}
+
+.animate-fade-in-delay-1 {
+    animation: fadeInUp 1s ease-out 0.2s both;
+}
+
+.animate-fade-in-delay-2 {
+    animation: fadeInUp 1s ease-out 0.4s both;
+}
+
+.animate-fade-in-delay-3 {
+    animation: fadeInUp 1s ease-out 0.6s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Floating Cards */
+.hero-illustration {
+    position: relative;
+    height: 500px;
+}
+
+.floating-card {
+    position: absolute;
+    background: white;
+    padding: 20px 30px;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    animation: floatCard 6s ease-in-out infinite;
+}
+
+.floating-card i {
+    font-size: 2rem;
+    color: #667eea;
+}
+
+.floating-card span {
+    font-weight: 600;
+    color: #333;
+}
+
+.card-1 {
+    top: 50px;
+    left: 50px;
+    animation-delay: 0s;
+}
+
+.card-2 {
+    top: 200px;
+    right: 100px;
+    animation-delay: 2s;
+}
+
+.card-3 {
+    bottom: 100px;
+    left: 100px;
+    animation-delay: 4s;
+}
+
+@keyframes floatCard {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+/* Feature Cards */
+.feature-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 20px;
+    height: 100%;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    position: relative;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    border-color: #667eea;
+}
+
+.feature-card.featured {
+    border: 2px solid #667eea;
+    transform: scale(1.05);
+}
+
+.feature-card.featured:hover {
+    transform: scale(1.05) translateY(-10px);
+}
+
+.popular-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+}
+
+.feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.feature-list li {
+    padding: 8px 0;
+    color: #666;
+}
+
+.bg-primary-soft {
+    background-color: rgba(102, 126, 234, 0.1);
+}
+
+/* Role Cards */
+.role-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 20px;
+    height: 100%;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.role-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.role-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+}
+
+.bg-primary-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-success-gradient {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.bg-info-gradient {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.bg-warning-gradient {
+    background: linear-gradient(135deg, #fa8231 0%, #ffd96a 100%);
+}
+
+.role-features {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+.role-features li {
+    padding: 10px 0;
+    color: #666;
+}
+
+.role-features i {
+    color: #28a745;
+    margin-right: 10px;
+}
+
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.cta-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 60px;
+    border-radius: 30px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-content {
+        padding: 40px 0;
+    }
+
+    .display-3 {
+        font-size: 2.5rem;
+    }
+
+    .stat-item {
+        margin-bottom: 20px;
+    }
+
+    .cta-card {
+        padding: 40px 20px;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

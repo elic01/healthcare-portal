@@ -1,0 +1,612 @@
+{% extends "base.html" %}
+
+{% block title %}Nurse Dashboard - PDMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .nurse-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    
+    .info-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .info-card .card-header {
+        background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
+        color: white;
+        border-radius: 15px 15px 0 0 !important;
+        border: none;
+    }
+    
+    .appointment-today {
+        border-left: 4px solid #28a745;
+        background-color: #f8f9fa;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+    
+    .patient-item {
+        border-left: 4px solid #007bff;
+        background-color: #f8f9fa;
+        margin-bottom: 10px;
+        border-radius: 8px;
+    }
+    
+    .badge-urgent {
+        background-color: #dc3545;
+    }
+    
+    .badge-normal {
+        background-color: #28a745;
+    }
+    
+    .badge-status {
+        font-size: 0.75rem;
+    }
+    
+    .nurse-actions .btn {
+        margin: 5px;
+        border-radius: 25px;
+        padding: 8px 20px;
+    }
+    
+    .time-slot {
+        background: #e9ecef;
+        border-radius: 20px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+        display: inline-block;
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Nurse Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="nurse-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2><i class="fas fa-user-nurse"></i> Welcome, Nurse {{ session.first_name }}!</h2>
+                        <p class="mb-0">Today's Schedule & Patient Care Overview</p>
+                        {% if nurse_info and nurse_info.department %}
+                        <small><i class="fas fa-building"></i> {{ nurse_info.department }} Department</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="text-end">
+                            <small>{{ moment().format('dddd, MMMM Do YYYY') if moment else 'Today' }}</small><br>
+                            <span id="current-time" class="h5"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                <h3>{{ appointments|length }}</h3>
+                <p class="mb-0">Today's Appointments</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3>{{ recent_patients|length }}</h3>
+                <p class="mb-0">Recent Patients</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <i class="fas fa-user-md fa-2x mb-2"></i>
+                <h3>{{ nurse_info.specialization if nurse_info and nurse_info.specialization else 'General' }}</h3>
+                <p class="mb-0">Specialization</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                <h3>{{ nurse_info.status|title if nurse_info and nurse_info.status else 'Active' }}</h3>
+                <p class="mb-0">Status</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Today's Appointments -->
+        <div class="col-lg-8 mb-4">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-calendar-day"></i> Today's Appointments</h5>
+                </div>
+                <div class="card-body">
+                    {% if appointments %}
+                        {% for appointment in appointments %}
+                        <div class="appointment-today p-3">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="mb-1">
+                                        {% if appointment.patient and appointment.patient.first_name %}
+                                            <i class="fas fa-user"></i> {{ appointment.patient.first_name }} {{ appointment.patient.last_name }}
+                                        {% else %}
+                                            <i class="fas fa-user"></i> Patient Information Unavailable
+                                        {% endif %}
+                                    </h6>
+                                    <p class="mb-1">
+                                        <strong>Doctor:</strong>
+                                        {% if appointment.doctor and appointment.doctor.first_name %}
+                                            Dr. {{ appointment.doctor.first_name }} {{ appointment.doctor.last_name }}
+                                        {% else %}
+                                            Not Assigned
+                                        {% endif %}
+                                    </p>
+                                    {% if appointment.appointment_time %}
+                                    <span class="time-slot">
+                                        <i class="fas fa-clock"></i> {{ appointment.appointment_time }}
+                                    </span>
+                                    {% endif %}
+                                    {% if appointment.reason %}
+                                    <p class="mb-0 text-muted">
+                                        <strong>Reason:</strong> {{ appointment.reason }}
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 text-md-end">
+                                    <span class="badge {{ 'badge-urgent' if appointment.priority == 'urgent' else 'badge-normal' }} badge-status mb-2">
+                                        {{ appointment.status|default('scheduled')|title }}
+                                    </span><br>
+                                    <div class="nurse-actions">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewPatient('{{ appointment.patient_id }}')">
+                                            <i class="fas fa-eye"></i> View
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-success" onclick="updateStatus('{{ appointment.id }}')">
+                                            <i class="fas fa-check"></i> Update
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-calendar-times fa-4x mb-3"></i>
+                            <h5>No appointments scheduled for today</h5>
+                            <p>Enjoy a lighter day or check on general patient care tasks.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Patients & Quick Actions -->
+        <div class="col-lg-4">
+            <!-- Recent Patients -->
+            <div class="info-card card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user-friends"></i> Recent Patients</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_patients %}
+                        {% for patient in recent_patients[:5] %}
+                        <div class="patient-item p-2 mb-2">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ patient.first_name }} {{ patient.last_name }}</h6>
+                                    {% if patient.phone_number %}
+                                    <small class="text-muted">
+                                        <i class="fas fa-phone"></i> {{ patient.phone_number }}
+                                    </small>
+                                    {% endif %}
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewPatient('{{ patient.id }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% if recent_patients|length > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="#" class="btn btn-sm btn-outline-secondary">View All Patients</a>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-users fa-2x mb-2"></i>
+                            <p>No recent patients found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Nurse Info -->
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-id-badge"></i> Your Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Name:</strong> {{ session.first_name }} {{ session.last_name }}</p>
+                    {% if nurse_info %}
+                        {% if nurse_info.license_number %}
+                        <p><strong>License:</strong> {{ nurse_info.license_number }}</p>
+                        {% endif %}
+                        {% if nurse_info.department %}
+                        <p><strong>Department:</strong> {{ nurse_info.department }}</p>
+                        {% endif %}
+                        {% if nurse_info.specialization %}
+                        <p><strong>Specialization:</strong> {{ nurse_info.specialization }}</p>
+                        {% endif %}
+                        {% if nurse_info.hire_date %}
+                        <p><strong>Hire Date:</strong> {{ nurse_info.hire_date }}</p>
+                        {% endif %}
+                    {% endif %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('profile') }}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                            <i class="fas fa-edit"></i> Update Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions Panel -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="info-card card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tools"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <button class="btn btn-outline-primary w-100" onclick="openVitalSignsModal()">
+                                <i class="fas fa-heartbeat"></i><br>
+                                <small>Vital Signs</small>
+                            </button>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="{{ url_for('book_appointment') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-calendar-plus"></i><br>
+                                <small>Schedule</small>
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="{{ url_for('medical_records') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-file-medical"></i><br>
+                                <small>View Records</small>
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <button class="btn btn-outline-warning w-100" onclick="openPatientNotesModal()">
+                                <i class="fas fa-notes-medical"></i><br>
+                                <small>Add Notes</small>
+                            </button>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="{{ url_for('patients_list') }}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-users"></i><br>
+                                <small>Patients</small>
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <button class="btn btn-outline-danger w-100" onclick="showEmergencyContacts()">
+                                <i class="fas fa-exclamation-triangle"></i><br>
+                                <small>Emergency</small>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update current time
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        document.getElementById('current-time').textContent = timeString;
+    }
+    
+    // Update time every second
+    setInterval(updateTime, 1000);
+    updateTime(); // Initial call
+    
+    // Placeholder functions for interactivity
+    function viewPatient(patientId) {
+        alert('Viewing patient details for ID: ' + patientId);
+        // This would typically redirect to a patient details page
+        // window.location.href = '/patients/' + patientId;
+    }
+    
+    function updateStatus(appointmentId) {
+        if (confirm('Update appointment status?')) {
+            alert('Status updated for appointment ID: ' + appointmentId);
+            // This would typically make an AJAX call to update the status
+        }
+    }
+    
+    // Auto-refresh appointments every 10 minutes
+    setInterval(function() {
+        console.log('Checking for appointment updates...');
+        // This would typically make an AJAX call to refresh appointment data
+        // location.reload(); // Uncomment for full page refresh
+    }, 600000);
+    
+    // Add notification sound for urgent appointments (if any)
+    document.addEventListener('DOMContentLoaded', function() {
+        const urgentAppointments = document.querySelectorAll('.badge-urgent');
+        if (urgentAppointments.length > 0) {
+            console.log('You have ' + urgentAppointments.length + ' urgent appointments today!');
+            // Could add actual notification here
+        }
+    });
+
+    // Quick Actions Functions
+    function openVitalSignsModal() {
+        const modal = new bootstrap.Modal(document.getElementById('vitalSignsModal'));
+        modal.show();
+    }
+
+    function openPatientNotesModal() {
+        const modal = new bootstrap.Modal(document.getElementById('patientNotesModal'));
+        modal.show();
+    }
+
+    function showEmergencyContacts() {
+        const modal = new bootstrap.Modal(document.getElementById('emergencyModal'));
+        modal.show();
+    }
+
+    // Vital Signs Form Submission
+    function submitVitalSigns() {
+        const form = document.getElementById('vitalSignsForm');
+        const formData = new FormData(form);
+
+        const submitBtn = document.getElementById('vitalSignsSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recording...';
+
+        fetch('/api/vital-signs', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Vital signs recorded successfully!', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('vitalSignsModal')).hide();
+                form.reset();
+            } else {
+                showAlert('Error: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('Error recording vital signs: ' + error, 'danger');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Record Vital Signs';
+        });
+    }
+
+    // Patient Notes Form Submission
+    function submitPatientNotes() {
+        const form = document.getElementById('patientNotesForm');
+        const formData = new FormData(form);
+
+        const submitBtn = document.getElementById('notesSubmitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+        fetch('/api/patient-notes', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('Notes added successfully!', 'success');
+                bootstrap.Modal.getInstance(document.getElementById('patientNotesModal')).hide();
+                form.reset();
+            } else {
+                showAlert('Error: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showAlert('Error saving notes: ' + error, 'danger');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Notes';
+        });
+    }
+
+    function showAlert(message, type) {
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+        alert.style.zIndex = '9999';
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alert);
+
+        setTimeout(() => alert.remove(), 5000);
+    }
+</script>
+
+<!-- Vital Signs Modal -->
+<div class="modal fade" id="vitalSignsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-heartbeat"></i> Record Vital Signs</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="vitalSignsForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-user"></i> Patient</label>
+                            <select class="form-select" name="patient_id" required>
+                                <option value="">Select Patient</option>
+                                {% for patient in recent_patients %}
+                                <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-thermometer-half"></i> Temperature (°F)</label>
+                            <input type="number" class="form-control" name="temperature" step="0.1" placeholder="98.6">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-heartbeat"></i> Blood Pressure</label>
+                            <input type="text" class="form-control" name="blood_pressure" placeholder="120/80">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-heart"></i> Pulse (bpm)</label>
+                            <input type="number" class="form-control" name="pulse" placeholder="72">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-lungs"></i> Respiratory Rate</label>
+                            <input type="number" class="form-control" name="respiratory_rate" placeholder="16">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label"><i class="fas fa-tint"></i> Oxygen Saturation (%)</label>
+                            <input type="number" class="form-control" name="oxygen_saturation" placeholder="98">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label"><i class="fas fa-notes-medical"></i> Notes</label>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="Additional observations..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="vitalSignsSubmitBtn" onclick="submitVitalSigns()">
+                    <i class="fas fa-save"></i> Record Vital Signs
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Patient Notes Modal -->
+<div class="modal fade" id="patientNotesModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="fas fa-notes-medical"></i> Add Patient Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="patientNotesForm">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-user"></i> Patient</label>
+                        <select class="form-select form-select-lg" name="patient_id" required>
+                            <option value="">Select Patient</option>
+                            {% for patient in recent_patients %}
+                            <option value="{{ patient.id }}">{{ patient.first_name }} {{ patient.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-tag"></i> Note Type</label>
+                        <select class="form-select" name="note_type" required>
+                            <option value="general">General Observation</option>
+                            <option value="medication">Medication Administration</option>
+                            <option value="treatment">Treatment Performed</option>
+                            <option value="assessment">Patient Assessment</option>
+                            <option value="care_plan">Care Plan Update</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-edit"></i> Notes</label>
+                        <textarea class="form-control" name="notes" rows="6" required
+                                  placeholder="Enter detailed notes about patient care, observations, or treatments..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="notesSubmitBtn" onclick="submitPatientNotes()">
+                    <i class="fas fa-save"></i> Save Notes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Emergency Contacts Modal -->
+<div class="modal fade" id="emergencyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Emergency Contacts</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <strong><i class="fas fa-info-circle"></i> Emergency Protocols</strong>
+                </div>
+                <div class="list-group">
+                    <div class="list-group-item">
+                        <h6 class="mb-1"><i class="fas fa-phone-alt"></i> Emergency Services</h6>
+                        <p class="mb-0"><strong>911</strong> - Fire, Police, Medical Emergency</p>
+                    </div>
+                    <div class="list-group-item">
+                        <h6 class="mb-1"><i class="fas fa-hospital"></i> Hospital Security</h6>
+                        <p class="mb-0"><strong>(555) 0100</strong></p>
+                    </div>
+                    <div class="list-group-item">
+                        <h6 class="mb-1"><i class="fas fa-user-md"></i> On-Call Doctor</h6>
+                        <p class="mb-0"><strong>(555) 0101</strong></p>
+                    </div>
+                    <div class="list-group-item">
+                        <h6 class="mb-1"><i class="fas fa-user-shield"></i> Nursing Supervisor</h6>
+                        <p class="mb-0"><strong>(555) 0102</strong></p>
+                    </div>
+                    <div class="list-group-item">
+                        <h6 class="mb-1"><i class="fas fa-flask"></i> Poison Control</h6>
+                        <p class="mb-0"><strong>1-800-222-1222</strong></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
