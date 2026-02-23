@@ -32,7 +32,7 @@
         <div class="card stat-card admin-theme">
             <div class="card-body text-center">
                 <i class="fas fa-users fa-3x text-primary mb-3"></i>
-                <div class="stat-number">{{ stats.total_users or 0 }}</div>
+                <div class="stat-number" id="stat-total-users">{{ stats.total_users or 0 }}</div>
                 <div class="stat-label">Total Users</div>
             </div>
         </div>
@@ -43,7 +43,7 @@
         <div class="card stat-card patient-theme">
             <div class="card-body text-center">
                 <i class="fas fa-user-injured fa-3x patient-color mb-3"></i>
-                <div class="stat-number patient-color">{{ stats.patients or 0 }}</div>
+                <div class="stat-number patient-color" id="stat-patients">{{ stats.patients or 0 }}</div>
                 <div class="stat-label">Patients</div>
             </div>
         </div>
@@ -54,7 +54,7 @@
         <div class="card stat-card doctor-theme">
             <div class="card-body text-center">
                 <i class="fas fa-user-md fa-3x doctor-color mb-3"></i>
-                <div class="stat-number doctor-color">{{ stats.doctors or 0 }}</div>
+                <div class="stat-number doctor-color" id="stat-doctors">{{ stats.doctors or 0 }}</div>
                 <div class="stat-label">Doctors</div>
             </div>
         </div>
@@ -65,7 +65,7 @@
         <div class="card stat-card nurse-theme">
             <div class="card-body text-center">
                 <i class="fas fa-user-nurse fa-3x nurse-color mb-3"></i>
-                <div class="stat-number nurse-color">{{ stats.nurses or 0 }}</div>
+                <div class="stat-number nurse-color" id="stat-nurses">{{ stats.nurses or 0 }}</div>
                 <div class="stat-label">Nurses</div>
             </div>
         </div>
@@ -76,7 +76,7 @@
         <div class="card stat-card">
             <div class="card-body text-center">
                 <i class="fas fa-calendar-check fa-3x text-info mb-3"></i>
-                <div class="stat-number text-info">{{ stats.appointments or 0 }}</div>
+                <div class="stat-number text-info" id="stat-appointments">{{ stats.appointments or 0 }}</div>
                 <div class="stat-label">Total Appointments</div>
             </div>
         </div>
@@ -87,7 +87,7 @@
         <div class="card stat-card">
             <div class="card-body text-center">
                 <i class="fas fa-file-medical-alt fa-3x text-success mb-3"></i>
-                <div class="stat-number text-success">{{ stats.medical_records or 0 }}</div>
+                <div class="stat-number text-success" id="stat-medical-records">{{ stats.medical_records or 0 }}</div>
                 <div class="stat-label">Medical Records</div>
             </div>
         </div>
@@ -98,7 +98,7 @@
         <div class="card stat-card admin-theme">
             <div class="card-body text-center">
                 <i class="fas fa-user-cog fa-3x admin-color mb-3"></i>
-                <div class="stat-number admin-color">{{ stats.administrators or 0 }}</div>
+                <div class="stat-number admin-color" id="stat-administrators">{{ stats.administrators or 0 }}</div>
                 <div class="stat-label">Administrators</div>
             </div>
         </div>
@@ -274,17 +274,26 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-refresh statistics every 30 seconds
-    setInterval(function() {
-        const stats = document.querySelectorAll('.stat-number');
-        stats.forEach(function(stat) {
-            stat.style.opacity = '0.5';
-        });
-        
-        setTimeout(function() {
-            location.reload();
-        }, 1000);
-    }, 30000);
+    function updateStats() {
+        fetch('{{ url_for("api_admin_stats") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const stats = data.stats;
+                    document.getElementById('stat-total-users').innerText = stats.total_users;
+                    document.getElementById('stat-patients').innerText = stats.patients;
+                    document.getElementById('stat-doctors').innerText = stats.doctors;
+                    document.getElementById('stat-nurses').innerText = stats.nurses;
+                    document.getElementById('stat-appointments').innerText = stats.appointments;
+                    document.getElementById('stat-medical-records').innerText = stats.medical_records;
+                    document.getElementById('stat-administrators').innerText = stats.administrators;
+                }
+            })
+            .catch(error => console.error('Error fetching stats:', error));
+    }
+
+    // Auto-refresh statistics every 15 seconds
+    setInterval(updateStats, 15000);
     
     // Add tooltips to activity items
     const activityItems = document.querySelectorAll('.activity-item');
