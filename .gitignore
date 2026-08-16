@@ -120,6 +120,17 @@ dmypy.json
 # Documentation builds
 docs/_build/
 
+# AI & Assistant files (keep local, not tracked in repo)
+GEMINI.md
+CLAUDE.md
+.gemini/
+.claude/
+.cursor/
+.cursorrules
+.copilot/
+.agent/
+.chat/
+
 # OS Artifacts
 .DS_Store
 .DS_Store?
@@ -128,3 +139,4 @@ docs/_build/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
