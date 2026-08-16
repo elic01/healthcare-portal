@@ -1,11 +1,15 @@
 # Healthcare Portal - Git Ignore File
 
-# Python
+# Python & C extensions
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+*.dylib
+*.dll
 .Python
+
+# Distribution / packaging
 build/
 develop-eggs/
 dist/
@@ -18,64 +22,109 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Virtual Environment
+# Virtual Environments
+.venv/
+.venv*/
 venv/
 env/
 ENV/
-.venv
+env.bak/
+venv.bak/
+pip-wheel-metadata/
 
-# Environment Variables (IMPORTANT - contains secrets!)
+# Environment Variables & Secrets (CRITICAL)
 .env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+*.pem
+*.key
+*.crt
+*.cert
+*.pfx
+*.p12
+*.pub
+secrets.json
+service-account*.json
+credentials.json
+*_rsa
+id_rsa*
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.DS_Store
+# Database, Containers & Storage
+postgres_data/
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
 
 # Logs
 logs/
 *.log
+*.log.*
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Uploads
+# Uploads & Temp
 uploads/
 temp/
+tmp/
+*.tmp
+*.bak
+*.backup
+*.orig
+*~
 
-# Flask
+# Flask & Caches
 instance/
 .webassets-cache
+session_data/
+.cache/
 
-# Testing
+# Testing & Coverage
 .pytest_cache/
 .coverage
+.coverage.*
+coverage.xml
 htmlcov/
 .tox/
+.nox/
 .hypothesis/
+
+# Type checking & Linting
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# IDE & Editor Configuration
+.vscode/
+.idea/
+*.swp
+*.swo
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
 
 # Documentation builds
 docs/_build/
 
-# Backup files
-*.backup
-*.bak
-*~
-
-# OS
-Thumbs.db
+# OS Artifacts
 .DS_Store
-
-# Temporary files
-tmp/
-temp/
-*.tmp
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
