@@ -49,6 +49,7 @@ class DatabaseManager:
                 host=os.getenv("LOCAL_DB_HOST", "localhost"),
                 port=os.getenv("LOCAL_DB_PORT", "5432")
             )
+            self.conn.autocommit = True
             print("✅ Connected to Local PostgreSQL")
         except Exception as e:
             print(f"❌ Local DB Connection Error: {e}")
@@ -57,6 +58,15 @@ class DatabaseManager:
         if not self.use_local and self.supabase:
             return self.supabase.table(table_name)
         return LocalQueryBuilder(self.conn, table_name)
+
+class QueryResult:
+    """Wrapper for query responses to match Supabase API structure"""
+    def __init__(self, data=None, count=0):
+        self.data = data if data is not None else []
+        self.count = count
+
+    def execute(self):
+        return self
 
 class LocalQueryBuilder:
     """Minimal Query Builder to mimic Supabase syntax for local Postgres"""
@@ -68,18 +78,26 @@ class LocalQueryBuilder:
         self.limit_val = None
         self.columns = "*"
         self.joins = []
+        self.mode = "select"
+        self.mutation_data = None
 
     def select(self, columns="*", count=None):
-        # Handle basic Supabase join syntax: "*, users!doctor_id(first_name, last_name)"
+        self.mode = "select"
         if "!" in columns:
-            # Very basic parsing for common healthcare portal joins
-            # This is a hack to make the local DB work with existing templates
-            self.columns = "*" 
-            # In a real app, we'd parse this properly. For now, we'll just return everything
-            # and the templates will need to be slightly more robust or we handle it in execute()
+            self.columns = "*"
         else:
             self.columns = columns
         self.count_type = count
+        return self
+
+    def insert(self, data):
+        self.mode = "insert"
+        self.mutation_data = data
+        return self
+
+    def update(self, data):
+        self.mode = "update"
+        self.mutation_data = data
         return self
 
     def eq(self, column, value):
@@ -105,47 +123,82 @@ class LocalQueryBuilder:
 
     def execute(self):
         if not self.conn:
-            return type('Result', (), {'data': [], 'count': 0})
+            return QueryResult([], 0)
 
+        if self.mode == "insert":
+            data = self.mutation_data
+            if not isinstance(data, list):
+                data = [data]
+            results = []
+            try:
+                with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    for item in data:
+                        columns = list(item.keys())
+                        placeholders = ["%s"] * len(columns)
+                        query = f"INSERT INTO {self.table_name} ({', '.join(columns)}) VALUES ({', '.join(placeholders)}) RETURNING *"
+                        cur.execute(query, list(item.values()))
+                        row = cur.fetchone()
+                        if row:
+                            results.append(dict(row))
+                return QueryResult(results, len(results))
+            except Exception as e:
+                print(f"Insert Error in {self.table_name}: {e}")
+                return QueryResult([], 0)
+
+        if self.mode == "update":
+            data = self.mutation_data or {}
+            results = []
+            try:
+                with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+                    set_clauses = [f"{k} = %s" for k in data.keys()]
+                    params = list(data.values())
+                    query = f"UPDATE {self.table_name} SET {', '.join(set_clauses)}"
+                    if self.filters:
+                        where_clauses = [f"{col} {op} %s" for col, op, val in self.filters]
+                        query += " WHERE " + " AND ".join(where_clauses)
+                        params.extend([val for col, op, val in self.filters])
+                    query += " RETURNING *"
+                    cur.execute(query, params)
+                    results = [dict(row) for row in cur.fetchall()]
+                return QueryResult(results, len(results))
+            except Exception as e:
+                print(f"Update Error in {self.table_name}: {e}")
+                return QueryResult([], 0)
+
+        # Default: SELECT
         query = f"SELECT {self.columns} FROM {self.table_name}"
         params = []
-        
         if self.filters:
             where_clauses = []
             for col, op, val in self.filters:
                 where_clauses.append(f"{col} {op} %s")
                 params.append(val)
             query += " WHERE " + " AND ".join(where_clauses)
-        
+
         if self.order_by:
             query += f" {self.order_by}"
         if self.limit_val:
             query += f" LIMIT {self.limit_val}"
-            
+
         try:
             with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
                 cur.execute(query, params)
                 data = cur.fetchall()
                 data_list = [dict(row) for row in data]
-                
-                # Convert datetime objects to strings for compatibility with Supabase API
+
                 for item in data_list:
                     for key, value in item.items():
                         if isinstance(value, datetime):
                             item[key] = value.isoformat()
 
-                # Mock Supabase-style nested objects for common joins if they exist as IDs
                 for item in data_list:
-                    # Mock 'users' join for doctor_id
                     if 'doctor_id' in item and item['doctor_id']:
                         cur.execute("SELECT first_name, last_name, id FROM users WHERE id = %s", (item['doctor_id'],))
                         user_data = cur.fetchone()
                         if user_data:
                             item['users'] = dict(user_data)
-                            # Handle different alias expectations
                             item['doctor'] = dict(user_data)
-                    
-                    # Mock 'users' join for patient_id
+
                     if 'patient_id' in item and item['patient_id']:
                         cur.execute("SELECT first_name, last_name, id FROM users WHERE id = %s", (item['patient_id'],))
                         user_data = cur.fetchone()
@@ -164,54 +217,10 @@ class LocalQueryBuilder:
                         cur.execute(count_query)
                     count = cur.fetchone()['count']
 
-                return type('Result', (), {'data': data_list, 'count': count})
+                return QueryResult(data_list, count)
         except Exception as e:
             print(f"SQL Error in {self.table_name}: {e}")
-            return type('Result', (), {'data': [], 'count': 0})
-
-    def insert(self, data):
-        if not self.conn: return type('Result', (), {'data': []})
-        if not isinstance(data, list): data = [data]
-        
-        results = []
-        try:
-            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-                for item in data:
-                    columns = item.keys()
-                    placeholders = ["%s"] * len(columns)
-                    query = f"INSERT INTO {self.table_name} ({', '.join(columns)}) VALUES ({', '.join(placeholders)}) RETURNING *"
-                    cur.execute(query, list(item.values()))
-                    results.append(dict(cur.fetchone()))
-            self.conn.commit()
-            return type('Result', (), {'data': results})
-        except Exception as e:
-            self.conn.rollback()
-            print(f"Insert Error in {self.table_name}: {e}")
-            return type('Result', (), {'data': []})
-
-    def update(self, data):
-        if not self.conn: return type('Result', (), {'data': []})
-        results = []
-        try:
-            with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-                set_clauses = [f"{k} = %s" for k in data.keys()]
-                params = list(data.values())
-                query = f"UPDATE {self.table_name} SET {', '.join(set_clauses)}"
-                
-                if self.filters:
-                    where_clauses = [f"{col} {op} %s" for col, op, val in self.filters]
-                    query += " WHERE " + " AND ".join(where_clauses)
-                    params.extend([val for col, op, val in self.filters])
-                
-                query += " RETURNING *"
-                cur.execute(query, params)
-                results = [dict(row) for row in cur.fetchall()]
-            self.conn.commit()
-            return type('Result', (), {'data': results})
-        except Exception as e:
-            self.conn.rollback()
-            print(f"Update Error in {self.table_name}: {e}")
-            return type('Result', (), {'data': []})
+            return QueryResult([], 0)
 
 class HealthcareApp:
     def __init__(self):
